@@ -6,6 +6,16 @@ ini_set('default_charset', 'UTF-8');
 ini_set('error_log', 'error_log');
 ini_set('memory_limit', '-1');
 require_once 'config.php';
+
+// Temporary debug logging
+$request_input = file_get_contents("php://input");
+$headers = json_encode(getallheaders());
+error_log("====== INCOMING REQUEST ======");
+error_log("INPUT: " . $request_input);
+error_log("HEADERS: " . $headers);
+error_log("SERVER: " . json_encode($_SERVER));
+error_log("============================");
+
 require_once 'botapi.php';
 require_once 'jdf.php';
 require_once 'function.php';
@@ -1301,7 +1311,6 @@ $textconnect
     } else {
         $textsub = "
 {$textbotlang['users']['stateus']['linksub']}
-            
 <code>$subscriptionurl</code>";
     }
     $bakinfos = json_encode([
@@ -1742,7 +1751,6 @@ $textconnect
         $pricelastextend = $product['price_product'];
     }
     $textextend = "📜 فاکتور تمدید شما برای نام کاربری {$nameloc['username']} ایجاد شد.
-        
 🛍 نام محصول :{$product['name_product']}
 💸 مبلغ تمدید : $pricelastextend تومان
 ⏱ مدت زمان تمدید :{$product['Service_time']} روز
@@ -2203,7 +2211,6 @@ $textconnect
 📌 تعرفه هر گیگابایت حجم اضافه : $extrapricevalues تومان
 🔋 حجم اضافه درخواستی : $text گیگابایت
 💰 مبلغ فاکتور شما : $priceextra تومان
-        
 ✅ جهت پرداخت و اضافه شدن حجم، روی دکمه زیر کلیک کنید";
     sendmessage($from_id, $textextra, $keyboardsetting, 'HTML');
     step('home', $from_id);
@@ -2652,7 +2659,6 @@ $textconnect
     ]);
     $textdisorder = "
     ⚠️ یک کاربر با اطلاعات زیر یک گزارش اختلال در سرویس ثبت کرده است .
-
 - نام کاربری : @$username
 - آیدی عددی : $from_id
 - نام کاربری کانفیگ : {$nameloc['username']}
@@ -2865,7 +2871,7 @@ $textconnect
     $DataUserOut = $ManagePanel->DataUser($nameloc['Service_location'], $nameloc['username']);
     $data_for_database = json_encode(array(
         'day' => $extratimeday,
-        'priceـper_day' => $extratimeday,
+        'priceـper_day' => $extratimepricevalue,
         'old_volume' => $DataUserOut['data_limit'],
         'expire_old' => $DataUserOut['expire']
     ));
@@ -3054,8 +3060,6 @@ $textconnect
     $textinfoadmin = "سلام ادمین 👋
         
 📌 یک درخواست حذف سرویس  توسط کاربر برای شما ارسال شده است. لطفا بررسی کرده و در صورت درست بودن و موافقت تایید کنید. 
-        
-        
 📊 اطلاعات سرویس کاربر :
 آیدی عددی کاربر : $from_id
 نام کاربری کاربر : @$username
@@ -3537,7 +3541,6 @@ if ($user['step'] == "createusertest" || preg_match('/locationtest_(.*)/', $data
     }
     $textsuppoer = "
     📣 پشتیبان عزیز یک پیام از سمت کاربر برای شما ارسال گردید.
-
 آیدی عددی کاربر : <a href = \"tg://user?id=$from_id\">$from_id</a>
 زمان ارسال : $timejalali
 وضعیت پیام : پاسخ داده نشده
@@ -4469,7 +4472,6 @@ $textinvite
     ]);
     $timejalali = jdate('Y/m/d H:i:s');
     $text_report = "📣 جزئیات ساخت اکانت در ربات شما ثبت شد .
-
 $textonebuy
 ▫️آیدی عددی کاربر : <code>$from_id</code>
 ▫️نام کاربری کاربر :@$username
@@ -4944,7 +4946,6 @@ $textonebuy
         $datatextbot['textafterpay'] = $marzban_list_get['type'] == "Manualsale" ? $datatextbot['textmanual'] : $datatextbot['textafterpay'];
         if ($marzban_list_get['type'] == "WGDashboard") {
             $datatextbot['textafterpay'] = "✅ سرویس با موفقیت ایجاد شد
-
 👤 نام کاربری سرویس : {username}
 🌿 نام سرویس:  {name_service}
 ‏🇺🇳 لوکیشن: {location}
@@ -5437,7 +5438,6 @@ $textonebuy
         $USD = number_format($usd);
         $textnowpayments = "
 <b>💲 جهت افزایش اعتبار کیف پول خود از طریق ارز دیجیتال روی دکمه پرداخت در انتهای پیام کلیک کنید</b>
-
 ⚠️ توجه:  زمان پرداخت 30 دقیقه می باشد پس از 30 دقیقه تراکنش لغو خواهد شد
 
 🌐 برخی از سایت های داخلی جهت خرید ارز دیجیتال 👇
@@ -5907,7 +5907,6 @@ if (preg_match('/Confirmpay_user_(\w+)_(\w+)/', $datain, $dataget)) {
         $Balance_id = mysqli_fetch_assoc(mysqli_query($connect, "SELECT * FROM user WHERE id = '{$Payment_report['id_user']}' LIMIT 1"));
         $Payment_report['price'] = number_format($Payment_report['price'], 0);
         $text_report = "💵 پرداخت جدید
-                
 آیدی عددی کاربر : $from_id
 مبلغ تراکنش : {$Payment_report['price']} 
 روش پرداخت : درگاه ارزی ریالی اول";
@@ -6367,7 +6366,6 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 🛒 کد پیگیری پرداخت: {$PaymentReport['id_order']}
 ⚜️ نام کاربری: @$username
 💸 مبلغ پرداختی: $format_price_cart تومان
-                
 ✍️ در صورت درست بودن رسید پرداخت را تایید نمایید.";
         sendmessage($from_id, $textbotlang['users']['Balance']['Send-receipt'], $keyboard, 'HTML');
     }
