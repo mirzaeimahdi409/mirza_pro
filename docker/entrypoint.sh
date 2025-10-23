@@ -8,6 +8,9 @@ fi
 
 # Configure PHP settings from environment variables
 cat > /usr/local/etc/php/conf.d/custom.ini <<EOF
+log_errors = On
+error_log = /dev/stderr
+display_errors = Off
 date.timezone=${TZ:-UTC}
 memory_limit=${PHP_MEMORY_LIMIT:-512M}
 upload_max_filesize=${PHP_UPLOAD_MAX_FILESIZE:-64M}
