@@ -20,6 +20,7 @@ RUN apt-get update \
         gd \
         intl \
         zip \
+        mysqli \
         pdo \
         pdo_mysql \
         mbstring \
