@@ -44,6 +44,11 @@ if ! grep -q "<Directory \"/var/www/html\">" /etc/apache2/apache2.conf; then
 EOT
 fi
 
+# Create writable storage directories for app runtime
+mkdir -p /var/www/html/storage/logs /var/www/html/storage/tmp || true
+chown -R www-data:www-data /var/www/html/storage || true
+chmod -R 0775 /var/www/html/storage || true
+
 exec "$@"
 
 

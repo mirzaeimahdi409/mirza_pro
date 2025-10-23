@@ -39,7 +39,9 @@ function update($table, $field, $newValue, $whereField = null, $whereValue = nul
     }
     $logss = "{$table}_{$field}_{$newValue}_{$whereField}_{$whereValue}_{$user['step']}_$date";
     if ($field != "message_count" || $field != "last_message_time") {
-        file_put_contents('log.txt', "\n" . $logss, FILE_APPEND);
+        $logFile = (defined('APP_LOGS') ? APP_LOGS : __DIR__ . '/storage/logs') . '/log.txt';
+        if (!is_dir(dirname($logFile))) { @mkdir(dirname($logFile), 0775, true); }
+        @file_put_contents($logFile, "\n" . $logss, FILE_APPEND);
     }
 }
 function select($table, $field, $whereField = null, $whereValue = null, $type = "select")

@@ -16,5 +16,16 @@ $adminnumber = getenv('ADMIN_NUMBER') ?: '{admin_number}';
 $domainhosts = getenv('DOMAIN_NAME') ?: '{domain_name}';
 $usernamebot = getenv('BOT_USERNAME') ?: '{username_bot}';
 
+$appStorage = getenv('STORAGE_PATH') ?: __DIR__ . '/storage';
+if (!defined('APP_STORAGE')) {
+    define('APP_STORAGE', $appStorage);
+}
+if (!defined('APP_TMP')) {
+    define('APP_TMP', APP_STORAGE . '/tmp');
+}
+if (!defined('APP_LOGS')) {
+    define('APP_LOGS', APP_STORAGE . '/logs');
+}
+
 $new_marzban = getenv('NEW_MARZBAN') !== false ? filter_var(getenv('NEW_MARZBAN'), FILTER_VALIDATE_BOOLEAN) : true;
 ?>
