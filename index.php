@@ -5120,15 +5120,17 @@ $textonebuy
                 ]
             ]);
         }
-        $gethelp = select("PaySetting", "ValuePay", "NamePay", "helpcart", "select")['ValuePay'];
-        if ($gethelp != 2) {
-            $data = json_decode($gethelp, true);
-            if ($data['type'] == "text") {
-                sendmessage($from_id, $data['text'], null, 'HTML');
-            } elseif ($data['type'] == "photo") {
-                sendphoto($from_id, $data['photoid'], $data['text']);
-            } elseif ($data['type'] == "video") {
-                sendvideo($from_id, $data['videoid'], $data['text']);
+        $gethelp = select("PaySetting", "ValuePay", "NamePay", "helpcart", "select")["ValuePay"];
+        if ($gethelp !== "2") {
+            $data = is_string($gethelp) ? json_decode($gethelp, true) : null;
+            if (is_array($data) && isset($data["type"])) {
+                if ($data['type'] == "text") {
+                    sendmessage($from_id, $data['text'], null, 'HTML');
+                } elseif ($data['type'] == "photo") {
+                    sendphoto($from_id, $data['photoid'], $data['text']);
+                } elseif ($data['type'] == "video") {
+                    sendvideo($from_id, $data['videoid'], $data['text']);
+                }
             }
         }
         $message_id = telegram('sendmessage', [
