@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:7.4-apache
 
 # Install system dependencies and PHP extensions required by the project
 RUN apt-get update \
