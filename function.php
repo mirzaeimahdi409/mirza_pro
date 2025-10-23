@@ -1063,7 +1063,18 @@ function checktelegramip()
         ['lower' => '149.154.160.0', 'upper' => '149.154.175.255'],
         ['lower' => '91.108.4.0', 'upper' => '91.108.7.255']
     ];
-    $ip_dec = (float) sprintf("%u", ip2long($_SERVER['REMOTE_ADDR']));
+    // Honor reverse-proxy headers when present (Nginx -> Apache)
+    $client_ip = $_SERVER['REMOTE_ADDR'];
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $parts = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        $candidate = trim($parts[0]);
+        if (filter_var($candidate, FILTER_VALIDATE_IP)) {
+            $client_ip = $candidate;
+        }
+    } elseif (!empty($_SERVER['HTTP_X_REAL_IP']) && filter_var($_SERVER['HTTP_X_REAL_IP'], FILTER_VALIDATE_IP)) {
+        $client_ip = $_SERVER['HTTP_X_REAL_IP'];
+    }
+    $ip_dec = (float) sprintf("%u", ip2long($client_ip));
     $ok = false;
     foreach ($telegram_ip_ranges as $telegram_ip_range)
         if (!$ok) {
