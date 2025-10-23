@@ -28,7 +28,9 @@ if($botlist){
 $backup_file_name = 'backup_' . date("Y-m-d") . '.sql';
 $zip_file_name = 'backup_' . date("Y-m-d") . '.zip';
 
-$command = "mysqldump -h localhost -u $usernamedb -p'$passworddb' --no-tablespaces $dbname > $backup_file_name";
+$dbhost = isset($dbhost) ? $dbhost : 'localhost';
+$dbport = isset($dbport) ? $dbport : '3306';
+$command = "mysqldump -h {$dbhost} -P {$dbport} -u {$usernamedb} -p'{$passworddb}' --no-tablespaces {$dbname} > {$backup_file_name}";
 
 $output = [];
 $return_var = 0;

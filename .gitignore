@@ -1,0 +1,8 @@
+.env
+*.log
+*.sql
+*.zip
+vendor/.cache
+node_modules/
+.DS_Store
+
