@@ -133,9 +133,11 @@ function addClient($namepanel, $usernameac, $Expire, $Total, $Uuid, $Flow, $subi
     );
     $req = new CurlRequest($url);
     $req->setHeaders($headers);
-    $req->setCookie('cookie.txt');
+    $cookieFile = (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt';
+    if (!is_dir(dirname($cookieFile))) { @mkdir(dirname($cookieFile), 0775, true); }
+    $req->setCookie($cookieFile);
     $response = $req->post($configpanel);
-    unlink('cookie.txt');
+    @unlink($cookieFile);
     return $response;
 }
 function updateClient($namepanel, $uuid, array $config)
@@ -168,9 +170,11 @@ function ResetUserDataUsagex_uisin($usernamepanel, $namepanel)
     );
     $req = new CurlRequest($url);
     $req->setHeaders($headers);
-    $req->setCookie('cookie.txt');
+    $cookieFile = (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt';
+    if (!is_dir(dirname($cookieFile))) { @mkdir(dirname($cookieFile), 0775, true); }
+    $req->setCookie($cookieFile);
     $response = $req->post(array());
-    unlink('cookie.txt');
+    @unlink($cookieFile);
     return $response;
 }
 function removeClient($location, $username)
@@ -184,8 +188,10 @@ function removeClient($location, $username)
     );
     $req = new CurlRequest($url);
     $req->setHeaders($headers);
-    $req->setCookie('cookie.txt');
+    $cookieFile = (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt';
+    if (!is_dir(dirname($cookieFile))) { @mkdir(dirname($cookieFile), 0775, true); }
+    $req->setCookie($cookieFile);
     $response = $req->post(array());
-    unlink('cookie.txt');
+    @unlink($cookieFile);
     return $response;
 }
