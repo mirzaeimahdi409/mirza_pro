@@ -16,7 +16,7 @@ function panel_login_cookie($code_panel)
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS => "username={$panel['username_panel']}&password=" . urlencode($panel['password_panel']),
-        CURLOPT_COOKIEJAR => 'cookie.txt',
+        CURLOPT_COOKIEJAR => (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt',
     ));
     $response = curl_exec($curl);
     if (curl_error($curl)) {
@@ -36,7 +36,9 @@ function login($code_panel, $verify = true)
             $timecurrent = time();
             $start_date = time() - strtotime($date['time']);
             if ($start_date <= 3000) {
-                file_put_contents('cookie.txt', $date['access_token']);
+                $cookiePath = (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp');
+                if (!is_dir($cookiePath)) { @mkdir($cookiePath, 0775, true); }
+                file_put_contents($cookiePath . '/cookie.txt', $date['access_token']);
                 return;
             }
         }
@@ -45,7 +47,7 @@ function login($code_panel, $verify = true)
     $time = date('Y/m/d H:i:s');
     $data = json_encode(array(
         'time' => $time,
-        'access_token' => file_get_contents('cookie.txt')
+        'access_token' => file_get_contents(((defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt'))
     ));
     update("marzban_panel", "datelogin", $data, 'name_panel', $panel['name_panel']);
     if (!is_string($response))
@@ -64,10 +66,10 @@ function get_clinets($username, $namepanel)
     );
     $req = new CurlRequest($url);
     $req->setHeaders($headers);
-    $req->setCookie('cookie.txt');
+    $req->setCookie(((defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt'));
     $response = $req->get();
     error_log(json_encode($response));
-    unlink('cookie.txt');
+    @unlink(((defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt'));
     return $response;
 }
 function addClient($namepanel, $usernameac, $Expire, $Total, $Uuid, $Flow, $subid, $inboundid, $name_product, $note = "")
