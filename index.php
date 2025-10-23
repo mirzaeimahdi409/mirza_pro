@@ -6,16 +6,6 @@ ini_set('default_charset', 'UTF-8');
 ini_set('error_log', 'error_log');
 ini_set('memory_limit', '-1');
 require_once 'config.php';
-
-// Temporary debug logging
-$request_input = file_get_contents("php://input");
-$headers = json_encode(getallheaders());
-error_log("====== INCOMING REQUEST ======");
-error_log("INPUT: " . $request_input);
-error_log("HEADERS: " . $headers);
-error_log("SERVER: " . json_encode($_SERVER));
-error_log("============================");
-
 require_once 'botapi.php';
 require_once 'jdf.php';
 require_once 'function.php';
@@ -1406,7 +1396,9 @@ $textconnect
     if ($dataget[2] == "1520") {
         for ($i = 0; $i < count($DataUserOut['links']); ++$i) {
             $randomString = bin2hex(random_bytes(3));
-            $urlimage = "$from_id$randomString.png";
+            $tmpDir = defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp';
+            if (!is_dir($tmpDir)) { @mkdir($tmpDir, 0775, true); }
+            $urlimage = $tmpDir . "/$from_id$randomString.png";
             $qrCode = createqrcode($DataUserOut['links'][$i]);
             file_put_contents($urlimage, $qrCode->getString());
             addBackgroundImage($urlimage, $qrCode, 'images.jpg');
@@ -1421,7 +1413,9 @@ $textconnect
         return;
     }
     $randomString = bin2hex(random_bytes(3));
-    $urlimage = "$from_id$randomString.png";
+    $tmpDir = defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp';
+    if (!is_dir($tmpDir)) { @mkdir($tmpDir, 0775, true); }
+    $urlimage = $tmpDir . "/$from_id$randomString.png";
     $qrCode = createqrcode($DataUserOut['links'][$dataget[2]]);
     file_put_contents($urlimage, $qrCode->getString());
     addBackgroundImage($urlimage, $qrCode, 'images.jpg');

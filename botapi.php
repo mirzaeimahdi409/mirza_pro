@@ -11,21 +11,23 @@ function telegram($method, $datas = [],$token = null)
     curl_setopt($ch, CURLOPT_TIMEOUT, 10); 
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5); 
     curl_setopt($ch, CURLOPT_POSTFIELDS, $datas);
-    $res = curl_exec($ch);
-    $res = json_decode($res,true);
-    if(!$res['ok']){
-        if(json_encode($res) != null)error_log(json_encode($res));
-    }
+    $raw = curl_exec($ch);
     if (curl_error($ch)) {
-        return curl_error($ch);
-    } else {
-        return $res;
+        $err = curl_error($ch);
+        error_log($err);
+        return ['ok' => false, 'description' => $err];
     }
+    $res = json_decode($raw, true);
+    if (!is_array($res)) {
+        error_log($raw);
+        return ['ok' => false, 'description' => 'Invalid Telegram response'];
+    }
+    if (!isset($res['ok']) || !$res['ok']) {
+        error_log(json_encode($res));
+    }
+    return $res;
 }
-error_log(json_encode(telegram('verifyUser',[
-    'user_id' => 1789174391,
-    'custom_description' => "تایید شده توسط fbi"
-])));
+// Debug verification call disabled in production
 function sendmessage($chat_id,$text,$keyboard,$parse_mode,$bot_token = null){
     if(intval($chat_id) == 0)return ['ok' => false];
     return telegram('sendmessage',[
