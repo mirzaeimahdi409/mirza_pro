@@ -152,9 +152,11 @@ function updateClient($namepanel, $uuid, array $config)
     );
     $req = new CurlRequest($url);
     $req->setHeaders($headers);
-    $req->setCookie('cookie.txt');
+    $cookieFile = (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt';
+    if (!is_dir(dirname($cookieFile))) { @mkdir(dirname($cookieFile), 0775, true); }
+    $req->setCookie($cookieFile);
     $response = $req->post($configpanel);
-    unlink('cookie.txt');
+    @unlink($cookieFile);
     return $response;
 }
 function ResetUserDataUsagex_uisin($usernamepanel, $namepanel)
