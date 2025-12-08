@@ -52,6 +52,9 @@ class CurlRequest {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT_MS, $this->timeout);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        // Some panels respond with temporary redirects (e.g. 307 to /pa-ma/); follow them automatically
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
 
         $finalHeaders = $this->prepareHeaders();
         if (!empty($finalHeaders)) {

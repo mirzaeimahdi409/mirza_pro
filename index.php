@@ -4314,8 +4314,10 @@ $textinvite
         ]
     ];
     $dataoutput = $ManagePanel->createUser($marzban_list_get['name_panel'], $info_product['code_product'], $username_ac, $datac);
-    if ($dataoutput['username'] == null) {
-        $dataoutput['msg'] = json_encode($dataoutput['msg']);
+    $hasUsername = is_array($dataoutput) && !empty($dataoutput['username']);
+    if (!$hasUsername) {
+        $rawMsg = is_array($dataoutput) && isset($dataoutput['msg']) ? $dataoutput['msg'] : 'Unknown panel response';
+        $dataoutput['msg'] = is_array($rawMsg) ? json_encode($rawMsg) : (string)$rawMsg;
         sendmessage($from_id, $textbotlang['users']['sell']['ErrorConfig'], $keyboard, 'HTML');
         $texterros = "⭕️ خطای ساخت اشتراک 
 ✍️ دلیل خطا : 
