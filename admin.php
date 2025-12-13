@@ -4127,25 +4127,25 @@ $text_expie_agent
         }
     } elseif ($marzban_list_get['type'] == "x-ui_single") {
         $x_ui_check_connect = login($marzban_list_get['code_panel'], false);
-        if ($x_ui_check_connect['success']) {
+        if ($x_ui_check_connect !== null && is_array($x_ui_check_connect) && isset($x_ui_check_connect['success']) && $x_ui_check_connect['success']) {
             sendmessage($from_id, $textbotlang['Admin']['managepanel']['connectx-ui'], $optionX_ui_single, 'HTML');
-        } elseif (isset($x_ui_check_connect['msg']) && $x_ui_check_connect['msg'] == "Invalid username or password.") {
+        } elseif ($x_ui_check_connect !== null && is_array($x_ui_check_connect) && isset($x_ui_check_connect['msg']) && $x_ui_check_connect['msg'] == "Invalid username or password.") {
             $text_marzban = "❌ نام کاربری یا رمز عبور پنل اشتباه است";
             sendmessage($from_id, $text_marzban, $optionX_ui_single, 'HTML');
         } else {
-            $error_msg = isset($x_ui_check_connect['errror']) ? $x_ui_check_connect['errror'] : "خطای نامشخص";
+            $error_msg = ($x_ui_check_connect !== null && is_array($x_ui_check_connect) && isset($x_ui_check_connect['errror'])) ? $x_ui_check_connect['errror'] : "خطای نامشخص";
             $text_marzban = $textbotlang['Admin']['managepanel']['errorstateuspanel'] . "علت خطا {$error_msg}";
             sendmessage($from_id, $text_marzban, $optionX_ui_single, 'HTML');
         }
     } elseif ($marzban_list_get['type'] == "alireza_single") {
         $x_ui_check_connect = login($marzban_list_get['code_panel'], false);
-        if ($x_ui_check_connect['success']) {
+        if ($x_ui_check_connect !== null && is_array($x_ui_check_connect) && isset($x_ui_check_connect['success']) && $x_ui_check_connect['success']) {
             sendmessage($from_id, $textbotlang['Admin']['managepanel']['connectx-ui'], $optionalireza_single, 'HTML');
-        } elseif (isset($x_ui_check_connect['msg']) && $x_ui_check_connect['msg'] == "The username or password is incorrect") {
+        } elseif ($x_ui_check_connect !== null && is_array($x_ui_check_connect) && isset($x_ui_check_connect['msg']) && $x_ui_check_connect['msg'] == "The username or password is incorrect") {
             $text_marzban = "❌ نام کاربری یا رمز عبور پنل اشتباه است";
             sendmessage($from_id, $text_marzban, $optionalireza_single, 'HTML');
         } else {
-            $error_msg = isset($x_ui_check_connect['errror']) ? $x_ui_check_connect['errror'] : "خطای نامشخص";
+            $error_msg = ($x_ui_check_connect !== null && is_array($x_ui_check_connect) && isset($x_ui_check_connect['errror'])) ? $x_ui_check_connect['errror'] : "خطای نامشخص";
             $text_marzban = $textbotlang['Admin']['managepanel']['errorstateuspanel'] . "علت خطا {$error_msg}";
             sendmessage($from_id, $text_marzban, $optionalireza_single, 'HTML');
         }
