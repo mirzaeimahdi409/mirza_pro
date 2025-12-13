@@ -4133,9 +4133,26 @@ $text_expie_agent
             $text_marzban = "❌ نام کاربری یا رمز عبور پنل اشتباه است";
             sendmessage($from_id, $text_marzban, $optionX_ui_single, 'HTML');
         } else {
-            $error_msg = (is_array($x_ui_check_connect) && isset($x_ui_check_connect['errror'])) ? $x_ui_check_connect['errror'] : "خطای نامشخص";
+            if (is_array($x_ui_check_connect)) {
+                if (isset($x_ui_check_connect['errror'])) {
+                    $error_msg = $x_ui_check_connect['errror'];
+                } elseif (isset($x_ui_check_connect['msg'])) {
+                    $error_msg = $x_ui_check_connect['msg'];
+                } elseif (isset($x_ui_check_connect['description'])) {
+                    $error_msg = $x_ui_check_connect['description'];
+                } else {
+                    $error_msg = "خطای نامشخص: " . json_encode($x_ui_check_connect);
+                }
+            } elseif ($x_ui_check_connect === null) {
+                $error_msg = "خطا در اتصال به پنل (پاسخ null)";
+            } else {
+                $error_msg = "خطای نامشخص: " . gettype($x_ui_check_connect);
+            }
             $text_marzban = $textbotlang['Admin']['managepanel']['errorstateuspanel'] . "علت خطا {$error_msg}";
-            sendmessage($from_id, $text_marzban, $optionX_ui_single, 'HTML');
+            $result = sendmessage($from_id, $text_marzban, $optionX_ui_single, 'HTML');
+            if (isset($result['ok']) && !$result['ok'] && isset($result['description'])) {
+                error_log("Telegram error for chat {$from_id}: " . $result['description']);
+            }
         }
     } elseif ($marzban_list_get['type'] == "alireza_single") {
         $x_ui_check_connect = login($marzban_list_get['code_panel'], false);
@@ -4145,9 +4162,26 @@ $text_expie_agent
             $text_marzban = "❌ نام کاربری یا رمز عبور پنل اشتباه است";
             sendmessage($from_id, $text_marzban, $optionalireza_single, 'HTML');
         } else {
-            $error_msg = (is_array($x_ui_check_connect) && isset($x_ui_check_connect['errror'])) ? $x_ui_check_connect['errror'] : "خطای نامشخص";
+            if (is_array($x_ui_check_connect)) {
+                if (isset($x_ui_check_connect['errror'])) {
+                    $error_msg = $x_ui_check_connect['errror'];
+                } elseif (isset($x_ui_check_connect['msg'])) {
+                    $error_msg = $x_ui_check_connect['msg'];
+                } elseif (isset($x_ui_check_connect['description'])) {
+                    $error_msg = $x_ui_check_connect['description'];
+                } else {
+                    $error_msg = "خطای نامشخص: " . json_encode($x_ui_check_connect);
+                }
+            } elseif ($x_ui_check_connect === null) {
+                $error_msg = "خطا در اتصال به پنل (پاسخ null)";
+            } else {
+                $error_msg = "خطای نامشخص: " . gettype($x_ui_check_connect);
+            }
             $text_marzban = $textbotlang['Admin']['managepanel']['errorstateuspanel'] . "علت خطا {$error_msg}";
-            sendmessage($from_id, $text_marzban, $optionalireza_single, 'HTML');
+            $result = sendmessage($from_id, $text_marzban, $optionalireza_single, 'HTML');
+            if (isset($result['ok']) && !$result['ok'] && isset($result['description'])) {
+                error_log("Telegram error for chat {$from_id}: " . $result['description']);
+            }
         }
     } elseif ($marzban_list_get['type'] == "hiddify") {
         $System_Stats = serverstatus($marzban_list_get['name_panel']);

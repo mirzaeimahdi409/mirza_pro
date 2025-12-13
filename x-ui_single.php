@@ -39,20 +39,38 @@ function login($code_panel, $verify = true)
                 $cookiePath = (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp');
                 if (!is_dir($cookiePath)) { @mkdir($cookiePath, 0775, true); }
                 file_put_contents($cookiePath . '/cookie.txt', $date['access_token']);
-                return;
+                return array('success' => true, 'msg' => 'Using cached login');
             }
         }
     }
     $response = panel_login_cookie($panel['code_panel']);
+    
+    // Check if panel_login_cookie returned an error
+    if (is_array($response) && isset($response['errror'])) {
+        return $response;
+    }
+    
+    // Check if response is valid string
+    if (!is_string($response)) {
+        return array('success' => false, 'errror' => 'Invalid response from login endpoint');
+    }
+    
+    $cookieFile = (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt';
+    $cookieContent = @file_get_contents($cookieFile);
+    
     $time = date('Y/m/d H:i:s');
     $data = json_encode(array(
         'time' => $time,
-        'access_token' => file_get_contents(((defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt'))
+        'access_token' => $cookieContent ? $cookieContent : ''
     ));
     update("marzban_panel", "datelogin", $data, 'name_panel', $panel['name_panel']);
-    if (!is_string($response))
-        return array('success' => false);
-    return json_decode($response, true);
+    
+    $decoded = json_decode($response, true);
+    if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
+        return array('success' => false, 'errror' => 'Invalid JSON response: ' . json_last_error_msg());
+    }
+    
+    return $decoded !== null ? $decoded : array('success' => false, 'errror' => 'Empty response');
 }
 
 function get_clinets($username, $namepanel)
