@@ -6043,6 +6043,7 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 نام محصول : {$get_invoice['name_product']}
 حجم محصول : {$get_invoice['Volume']} گیگ 
 زمان محصول : {$get_invoice['Service_time']} روز
+📍 موقعیت پنل : {$get_invoice['Service_location']}
 👤 نام اکانت کاربر : $first_name
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 💸 موجودی فعلی کاربر : $format_balance تومان
@@ -6108,6 +6109,7 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 تمدید
 نام کاربری سرویس : $usernamepanel
 نام محصول : {$prodcut['name_product']}
+📍 موقعیت پنل : {$nameloc['Service_location']}
 👤 نام اکانت کاربر : $first_name
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 💸 موجودی فعلی کاربر : $format_balance تومان
@@ -6122,6 +6124,8 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
         $partsdic = explode("%", $user['Processing_value_one']);
         $usernamepanel = $partsdic[0];
         $volumes = $partsdic[1];
+        $nameloc_volume = select("invoice", "*", "username", $usernamepanel, "select");
+        $service_location_volume = $nameloc_volume ? $nameloc_volume['Service_location'] : 'نامشخص';
         $textsendrasid = "
 ⭕️ یک پرداخت جدید انجام شده است .
 
@@ -6129,6 +6133,7 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 خرید حجم اضافه
 نام کاربری سرویس : $usernamepanel
 حجم خریداری شده  : $volumes
+📍 موقعیت پنل : $service_location_volume
 👤 نام اکانت کاربر : $first_name
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 💸 موجودی فعلی کاربر : $format_balance تومان
@@ -6143,6 +6148,8 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
         $partsdic = explode("%", $user['Processing_value_one']);
         $usernamepanel = $partsdic[0];
         $time = $partsdic[1];
+        $nameloc_time = select("invoice", "*", "username", $usernamepanel, "select");
+        $service_location_time = $nameloc_time ? $nameloc_time['Service_location'] : 'نامشخص';
         $textsendrasid = "
 ⭕️ یک پرداخت جدید انجام شده است .
 
@@ -6150,6 +6157,7 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 خرید زمان اضافه
 نام کاربری سرویس : $usernamepanel
 تعداد روز خریداری شده  : $time
+📍 موقعیت پنل : $service_location_time
 👤 نام اکانت کاربر : $first_name
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 💸 موجودی فعلی کاربر : $format_balance تومان
