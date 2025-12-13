@@ -17,13 +17,39 @@ function panel_login_cookie($code_panel)
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS => "username={$panel['username_panel']}&password=" . urlencode($panel['password_panel']),
         CURLOPT_COOKIEJAR => (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt',
+        CURLOPT_HEADER => false,
     ));
     $response = curl_exec($curl);
+    $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $content_type = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
+    
     if (curl_error($curl)) {
         $token = [];
         $token['errror'] = curl_error($curl);
+        curl_close($curl);
         return $token;
     }
+    
+    // Check HTTP status code
+    if ($http_code < 200 || $http_code >= 300) {
+        $token = [];
+        $token['errror'] = "HTTP Error {$http_code}: " . substr($response, 0, 200);
+        curl_close($curl);
+        return $token;
+    }
+    
+    // Check if response is empty
+    if (empty($response)) {
+        $token = [];
+        $token['errror'] = "Empty response from server";
+        curl_close($curl);
+        return $token;
+    }
+    
+    // Log response for debugging (first 500 chars)
+    error_log("Login response (first 500 chars): " . substr($response, 0, 500));
+    error_log("HTTP Code: {$http_code}, Content-Type: {$content_type}");
+    
     curl_close($curl);
     return $response;
 }
@@ -65,12 +91,27 @@ function login($code_panel, $verify = true)
     ));
     update("marzban_panel", "datelogin", $data, 'name_panel', $panel['name_panel']);
     
+    // Try to decode JSON
     $decoded = json_decode($response, true);
     if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
-        return array('success' => false, 'errror' => 'Invalid JSON response: ' . json_last_error_msg());
+        // Log the actual response for debugging
+        error_log("JSON decode error. Response: " . substr($response, 0, 500));
+        error_log("JSON error: " . json_last_error_msg());
+        
+        // Check if response looks like HTML
+        if (stripos($response, '<html') !== false || stripos($response, '<!DOCTYPE') !== false) {
+            return array('success' => false, 'errror' => 'Server returned HTML instead of JSON. Check panel URL and credentials.');
+        }
+        
+        // Check if response is empty or whitespace
+        if (trim($response) === '') {
+            return array('success' => false, 'errror' => 'Empty response from server');
+        }
+        
+        return array('success' => false, 'errror' => 'Invalid JSON response: ' . json_last_error_msg() . ' (Response: ' . substr(trim($response), 0, 100) . '...)');
     }
     
-    return $decoded !== null ? $decoded : array('success' => false, 'errror' => 'Empty response');
+    return $decoded !== null ? $decoded : array('success' => false, 'errror' => 'Empty JSON response');
 }
 
 function get_clinets($username, $namepanel)
