@@ -4330,7 +4330,10 @@ $text_expie_agent
     update("user", "Processing_value", $text, "id", $from_id);
     step('home', $from_id);
 } elseif ($text == "🔗 ویرایش آدرس پنل" && $adminrulecheck['rule'] == "administrator") {
-    sendmessage($from_id, $textbotlang['Admin']['managepanel']['geturlnew'], $backadmin, 'HTML');
+    $typepanel = select("marzban_panel", "*", "name_panel", $user['Processing_value'], "select");
+    $current_url = $typepanel['url_panel'] ? $typepanel['url_panel'] : 'ندارد';
+    $message_with_current_url = $textbotlang['Admin']['managepanel']['geturlnew'] . "\n\n📍 آدرس پنل فعلی: <code>{$current_url}</code>";
+    sendmessage($from_id, $message_with_current_url, $backadmin, 'HTML');
     step('GeturlNew', $from_id);
 } elseif ($user['step'] == "GeturlNew") {
     if (!filter_var($text, FILTER_VALIDATE_URL)) {
@@ -4338,7 +4341,9 @@ $text_expie_agent
         return;
     }
     $typepanel = select("marzban_panel", "*", "name_panel", $user['Processing_value'], "select");
-    outtypepanel($typepanel['type'], $textbotlang['Admin']['managepanel']['ChangedurlPanel']);
+    $old_url = $typepanel['url_panel'] ? $typepanel['url_panel'] : 'ندارد';
+    $message_with_url = $textbotlang['Admin']['managepanel']['ChangedurlPanel'] . "\n\n📍 آدرس پنل قبلی: <code>{$old_url}</code>\n📍 آدرس پنل جدید: <code>{$text}</code>";
+    outtypepanel($typepanel['type'], $message_with_url);
     update("marzban_panel", "url_panel", $text, "name_panel", $user['Processing_value']);
     update("marzban_panel", "datelogin", null, "name_panel", $user['Processing_value']);
     step('home', $from_id);
