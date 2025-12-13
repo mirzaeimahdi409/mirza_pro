@@ -6169,10 +6169,14 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 توضیحات: $caption $text
 ✍️ در صورت درست بودن رسید پرداخت را تایید نمایید.";
     } else {
+        // Get last active service location for balance increase
+        $last_invoice = mysqli_fetch_assoc(mysqli_query($connect, "SELECT Service_location FROM invoice WHERE id_user = {$from_id} AND (status = 'active' OR status = 'end_of_time' OR status = 'end_of_volume' OR status = 'sendedwarn' OR Status = 'send_on_hold') ORDER BY id_invoice DESC LIMIT 1"));
+        $service_location_balance = $last_invoice && isset($last_invoice['Service_location']) ? $last_invoice['Service_location'] : 'افزایش موجودی';
 
         $textsendrasid = "
 ⭕️ یک پرداخت جدید انجام شده است .
 افزایش موجودی            
+📍 موقعیت پنل : $service_location_balance
 👤 نام اکانت کاربر : $first_name
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 💸 موجودی فعلی کاربر : $format_balance تومان
@@ -6249,6 +6253,7 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 نام محصول : {$get_invoice['name_product']}
 حجم محصول : {$get_invoice['Volume']} گیگ
 زمان محصول : {$get_invoice['Service_time']} روز
+📍 موقعیت پنل : {$get_invoice['Service_location']}
 👤 نام اکانت کاربر : $first_name
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 💸 موجودی فعلی کاربر : $format_balance تومان
@@ -6312,6 +6317,7 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 تمدید
 نام کاربری سرویس : $usernamepanel
 نام محصول : {$prodcut['name_product']}
+📍 موقعیت پنل : {$nameloc['Service_location']}
 👤 نام اکانت کاربر : $first_name
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 💸 موجودی فعلی کاربر : $format_balance تومان
@@ -6325,6 +6331,8 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
         $partsdic = explode("%", $split_data[1]);
         $usernamepanel = $partsdic[0];
         $volumes = $partsdic[1];
+        $nameloc_volume2 = select("invoice", "*", "username", $usernamepanel, "select");
+        $service_location_volume2 = $nameloc_volume2 ? $nameloc_volume2['Service_location'] : 'نامشخص';
         $textsendrasid = "
 ⭕️ یک پرداخت جدید انجام شده است .
 
@@ -6332,6 +6340,7 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 خرید حجم اضافه
 نام کاربری سرویس : $usernamepanel
 حجم خریداری شده  : $volumes
+📍 موقعیت پنل : $service_location_volume2
 👤 نام اکانت کاربر : $first_name
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 💸 موجودی فعلی کاربر : $format_balance تومان
@@ -6345,6 +6354,8 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
         $partsdic = explode("%", $split_data[1]);
         $usernamepanel = $partsdic[0];
         $time = $partsdic[1];
+        $nameloc_time2 = select("invoice", "*", "username", $usernamepanel, "select");
+        $service_location_time2 = $nameloc_time2 ? $nameloc_time2['Service_location'] : 'نامشخص';
         $textsendrasid = "
 ⭕️ یک پرداخت جدید انجام شده است .
 
@@ -6352,6 +6363,7 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 خرید زمان اضافه
 نام کاربری سرویس : $usernamepanel
 تعداد روز خریداری شده  : $time
+📍 موقعیت پنل : $service_location_time2
 👤 نام اکانت کاربر : $first_name
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 💸 موجودی فعلی کاربر : $format_balance تومان
@@ -6362,10 +6374,14 @@ if (preg_match('/^sendresidcart-(.*)/', $datain, $dataget)) {
 ✍️ در صورت درست بودن رسید پرداخت را تایید نمایید.";
         sendmessage($from_id, "🚀 رسید شما ارسال و پس از بررسی به سرویس شما زمان اضافه خواهد شد", $keyboard, 'HTML');
     } else {
+        // Get last active service location for balance increase
+        $last_invoice2 = mysqli_fetch_assoc(mysqli_query($connect, "SELECT Service_location FROM invoice WHERE id_user = {$from_id} AND (status = 'active' OR status = 'end_of_time' OR status = 'end_of_volume' OR status = 'sendedwarn' OR Status = 'send_on_hold') ORDER BY id_invoice DESC LIMIT 1"));
+        $service_location_balance2 = $last_invoice2 && isset($last_invoice2['Service_location']) ? $last_invoice2['Service_location'] : 'افزایش موجودی';
 
         $textsendrasid = "
 ⭕️ یک پرداخت جدید انجام شده است .
 افزایش موجودی            
+📍 موقعیت پنل : $service_location_balance2
 👤 نام اکانت کاربر : $first_name
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 💸 موجودی فعلی کاربر : $format_balance تومان

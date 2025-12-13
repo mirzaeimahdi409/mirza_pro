@@ -923,8 +923,15 @@ $textonebuy
         $Payment_report['price'] = number_format($Payment_report['price'], 0);
         $format_price_cart = $Payment_report['price'];
         if ($Payment_report['Payment_Method'] == "cart to cart" or $Payment_report['Payment_Method'] == "arze digital offline") {
+            // Get last active service location for balance increase
+            global $pdo;
+            $stmt = $pdo->prepare("SELECT Service_location FROM invoice WHERE id_user = ? AND (status = 'active' OR status = 'end_of_time' OR status = 'end_of_volume' OR status = 'sendedwarn' OR Status = 'send_on_hold') ORDER BY id_invoice DESC LIMIT 1");
+            $stmt->execute([$Payment_report['id_user']]);
+            $last_invoice_func = $stmt->fetch(PDO::FETCH_ASSOC);
+            $service_location_balance_func = $last_invoice_func && isset($last_invoice_func['Service_location']) ? $last_invoice_func['Service_location'] : 'افزایش موجودی';
             $textconfrom = "⭕️ یک پرداخت جدید انجام شده است
         افزایش موجودی.
+📍 موقعیت پنل : $service_location_balance_func
 👤 شناسه کاربر: <code>{$Balance_id['id']}</code>
 🛒 کد پیگیری پرداخت: {$Payment_report['id_order']}
 ⚜️ نام کاربری: @{$Balance_id['username']}

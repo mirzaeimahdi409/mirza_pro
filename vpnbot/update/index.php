@@ -1272,9 +1272,13 @@ $textonebuy
         ]
     ]);
     $format_price_cart = number_format($PaymentReport['price']);
+    // Get last active service location for balance increase
+    $last_invoice_vpn = mysqli_fetch_assoc(mysqli_query($connect, "SELECT Service_location FROM invoice WHERE id_user = {$from_id} AND (status = 'active' OR status = 'end_of_time' OR status = 'end_of_volume' OR status = 'sendedwarn' OR Status = 'send_on_hold') ORDER BY id_invoice DESC LIMIT 1"));
+    $service_location_balance_vpn = $last_invoice_vpn && isset($last_invoice_vpn['Service_location']) ? $last_invoice_vpn['Service_location'] : 'افزایش موجودی';
     $textsendrasid = "
 ⭕️ یک پرداخت جدید انجام شده است .
 افزایش موجودی            
+📍 موقعیت پنل : $service_location_balance_vpn
 👤 شناسه کاربر:  <a href = \"tg://user?id=$from_id\">$from_id</a>
 🛒 کد پیگیری پرداخت: {$PaymentReport['id_order']}
 ⚜️ نام کاربری: @$username

@@ -19,8 +19,14 @@ function DirectPaymentbot($order_id,$image = 'images.jpg'){
         $Payment_report['price'] = number_format($Payment_report['price'], 0);
         $format_price_cart = $Payment_report['price'];
         if($Payment_report['Payment_Method'] == "cart to cart" or   $Payment_report['Payment_Method'] == "arze digital offline"){
-        $textconfrom = "⭕️ یک پرداخت جدید انجام شده است
+            // Get last active service location for balance increase
+            $stmt = $pdo->prepare("SELECT Service_location FROM invoice WHERE id_user = ? AND (status = 'active' OR status = 'end_of_time' OR status = 'end_of_volume' OR status = 'sendedwarn' OR Status = 'send_on_hold') ORDER BY id_invoice DESC LIMIT 1");
+            $stmt->execute([$Payment_report['id_user']]);
+            $last_invoice_func_vpn = $stmt->fetch(PDO::FETCH_ASSOC);
+            $service_location_balance_func_vpn = $last_invoice_func_vpn && isset($last_invoice_func_vpn['Service_location']) ? $last_invoice_func_vpn['Service_location'] : 'افزایش موجودی';
+            $textconfrom = "⭕️ یک پرداخت جدید انجام شده است
         افزایش موجودی.
+📍 موقعیت پنل : $service_location_balance_func_vpn
 👤 شناسه کاربر: <code>{$Balance_id['id']}</code>
 🛒 کد پیگیری پرداخت: {$Payment_report['id_order']}
 ⚜️ نام کاربری: @{$Balance_id['username']}
