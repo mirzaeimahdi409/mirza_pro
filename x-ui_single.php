@@ -5,7 +5,6 @@ ini_set('error_log', 'error_log');
 function panel_login_cookie($code_panel)
 {
     $panel = select("marzban_panel", "*", "code_panel", $code_panel, "select");
-    $cookieFile = (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt';
     $curl = curl_init();
     curl_setopt_array($curl, array(
         CURLOPT_URL => $panel['url_panel'] . '/login',
@@ -17,96 +16,43 @@ function panel_login_cookie($code_panel)
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS => "username={$panel['username_panel']}&password=" . urlencode($panel['password_panel']),
-        CURLOPT_COOKIEJAR => $cookieFile,
+        CURLOPT_COOKIEJAR => (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt',
     ));
     $response = curl_exec($curl);
-    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     if (curl_error($curl)) {
         $token = [];
         $token['errror'] = curl_error($curl);
-        curl_close($curl);
         return $token;
     }
     curl_close($curl);
-    // Return response with HTTP code for better error handling
-    return array('response' => $response, 'http_code' => $httpCode, 'cookie_file' => $cookieFile);
+    return $response;
 }
 function login($code_panel, $verify = true)
 {
     $panel = select("marzban_panel", "*", "code_panel", $code_panel, "select");
-    $cookiePath = (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp');
-    $cookieFile = $cookiePath . '/cookie.txt';
-    
     if ($panel['datelogin'] != null && $verify) {
         $date = json_decode($panel['datelogin'], true);
         if (isset($date['time'])) {
             $timecurrent = time();
             $start_date = time() - strtotime($date['time']);
             if ($start_date <= 3000) {
+                $cookiePath = (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp');
                 if (!is_dir($cookiePath)) { @mkdir($cookiePath, 0775, true); }
-                file_put_contents($cookieFile, $date['access_token']);
-                // Return success response when using cached cookie
-                return array('success' => true);
+                file_put_contents($cookiePath . '/cookie.txt', $date['access_token']);
+                return;
             }
         }
     }
-    
-    $result = panel_login_cookie($panel['code_panel']);
-    
-    // Handle error response from panel_login_cookie
-    if (isset($result['errror'])) {
-        return array('success' => false, 'errror' => $result['errror']);
-    }
-    
-    // Extract response and HTTP code
-    $response = $result['response'];
-    $httpCode = $result['http_code'];
-    $cookieFile = $result['cookie_file'];
-    
-    // Check if cookie file was created and has content (indicates successful login)
-    $cookieExists = file_exists($cookieFile) && filesize($cookieFile) > 0;
-    
-    // Try to decode JSON response
-    $jsonResponse = null;
-    if (is_string($response)) {
-        $jsonResponse = json_decode($response, true);
-    }
-    
-    // If we have a valid JSON response, use it
-    if (is_array($jsonResponse) && !is_null($jsonResponse)) {
-        // Save cookie for future use
-        if ($cookieExists) {
-            $time = date('Y/m/d H:i:s');
-            $cookieContent = file_get_contents($cookieFile);
-            $data = json_encode(array(
-                'time' => $time,
-                'access_token' => $cookieContent
-            ));
-            update("marzban_panel", "datelogin", $data, 'name_panel', $panel['name_panel']);
-        }
-        return $jsonResponse;
-    }
-    
-    // If response is not JSON but cookie exists and HTTP code is 200/302 (redirect), login was successful
-    if ($cookieExists && ($httpCode == 200 || $httpCode == 302)) {
-        // Save cookie for future use
-        $time = date('Y/m/d H:i:s');
-        $cookieContent = file_get_contents($cookieFile);
-        $data = json_encode(array(
-            'time' => $time,
-            'access_token' => $cookieContent
-        ));
-        update("marzban_panel", "datelogin", $data, 'name_panel', $panel['name_panel']);
-        return array('success' => true);
-    }
-    
-    // If HTTP code indicates error, return error response
-    if ($httpCode >= 400) {
-        return array('success' => false, 'msg' => "HTTP Error: $httpCode");
-    }
-    
-    // Default: return failure if we can't determine success
-    return array('success' => false, 'msg' => 'Unknown error');
+    $response = panel_login_cookie($panel['code_panel']);
+    $time = date('Y/m/d H:i:s');
+    $data = json_encode(array(
+        'time' => $time,
+        'access_token' => file_get_contents(((defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt'))
+    ));
+    update("marzban_panel", "datelogin", $data, 'name_panel', $panel['name_panel']);
+    if (!is_string($response))
+        return array('success' => false);
+    return json_decode($response, true);
 }
 
 function get_clinets($username, $namepanel)
