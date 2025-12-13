@@ -5,35 +5,70 @@ ini_set('error_log', 'error_log');
 function panel_login_cookie($code_panel)
 {
     $panel = select("marzban_panel", "*", "code_panel", $code_panel, "select");
+    
+    // Check if panel exists
+    if (empty($panel) || !isset($panel['url_panel'])) {
+        $token = [];
+        $token['errror'] = "Panel configuration not found";
+        return $token;
+    }
+    
+    // Build URL
+    $url = rtrim($panel['url_panel'], '/') . '/login';
+    $username = isset($panel['username_panel']) ? $panel['username_panel'] : '';
+    $password = isset($panel['password_panel']) ? $panel['password_panel'] : '';
+    
+    // Log URL for debugging (without password)
+    error_log("Attempting login to: " . $url);
+    error_log("Username: " . $username);
+    
     $curl = curl_init();
     curl_setopt_array($curl, array(
-        CURLOPT_URL => $panel['url_panel'] . '/login',
+        CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT_MS => 4000,
+        CURLOPT_TIMEOUT => 10, // Increased to 10 seconds
+        CURLOPT_CONNECTTIMEOUT => 5, // Connection timeout 5 seconds
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
-        CURLOPT_POSTFIELDS => "username={$panel['username_panel']}&password=" . urlencode($panel['password_panel']),
+        CURLOPT_POSTFIELDS => "username={$username}&password=" . urlencode($password),
         CURLOPT_COOKIEJAR => (defined('APP_TMP') ? APP_TMP : __DIR__ . '/storage/tmp') . '/cookie.txt',
         CURLOPT_HEADER => false,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => false,
     ));
+    
     $response = curl_exec($curl);
     $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $content_type = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
+    $curl_error = curl_error($curl);
+    $curl_errno = curl_errno($curl);
     
-    if (curl_error($curl)) {
+    // Check for cURL errors first
+    if ($curl_error) {
         $token = [];
-        $token['errror'] = curl_error($curl);
+        $token['errror'] = "Connection error: {$curl_error} (Code: {$curl_errno})";
+        error_log("cURL Error: {$curl_error} (Code: {$curl_errno}) for URL: {$url}");
         curl_close($curl);
         return $token;
     }
     
     // Check HTTP status code
+    if ($http_code == 0) {
+        $token = [];
+        $token['errror'] = "No HTTP response received. Server may be unreachable or timeout occurred.";
+        error_log("No HTTP response for URL: {$url}");
+        curl_close($curl);
+        return $token;
+    }
+    
     if ($http_code < 200 || $http_code >= 300) {
         $token = [];
-        $token['errror'] = "HTTP Error {$http_code}: " . substr($response, 0, 200);
+        $response_preview = is_string($response) ? substr($response, 0, 200) : 'Non-string response';
+        $token['errror'] = "HTTP Error {$http_code}: {$response_preview}";
+        error_log("HTTP Error {$http_code} for URL: {$url}. Response: {$response_preview}");
         curl_close($curl);
         return $token;
     }
@@ -41,7 +76,8 @@ function panel_login_cookie($code_panel)
     // Check if response is empty
     if (empty($response)) {
         $token = [];
-        $token['errror'] = "Empty response from server";
+        $token['errror'] = "Empty response from server (HTTP {$http_code}). Check if panel URL is correct: " . $url;
+        error_log("Empty response for URL: {$url}, HTTP Code: {$http_code}");
         curl_close($curl);
         return $token;
     }
